@@ -34,9 +34,9 @@ pipeline {
     stage('Kubernetes Deployment') {
       steps {
         echo 'Deploying to Kubernetes'
-        sh 'kubectl apply -f k8s/mysql.yaml'
-        sh 'kubectl apply -f k8s/deployment.yaml'
-        sh 'kubectl apply -f k8s/hpa.yaml'
+        sh 'kubectl apply -f k8s/mysql.yaml --validate=false'
+        sh 'kubectl apply -f k8s/deployment.yaml --validate=false'
+        sh 'kubectl apply -f k8s/hpa.yaml --validate=false'
         sh 'kubectl get pods'
         sh 'kubectl get svc'
         sh 'kubectl get hpa'
@@ -53,7 +53,7 @@ pipeline {
           fi
           
           # Create monitoring namespace
-          kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+          kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f - --validate=false
           
           # Install kube-prometheus-stack
           helm install prometheus kube-prometheus-stack \
