@@ -55,8 +55,8 @@ pipeline {
           # Create monitoring namespace
           kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
           
-          # Install kube-prometheus-stack
-          helm install prometheus kube-prometheus-stack \
+          # Install or upgrade kube-prometheus-stack
+          helm upgrade --install prometheus kube-prometheus-stack \
             --repo https://prometheus-community.github.io/helm-charts \
             --namespace monitoring
           
