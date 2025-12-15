@@ -27,7 +27,7 @@
                             <td><%= p.userName %></td>
                             <td><%= p.email %></td>
                             <td><%= p.id %></td>
-                            <td><button> <a href="http://localhost:8000/users/<%= p.id %>/edit">Edit</a> </button></td>
+                            <td><button> <a href="/users/<%= p.id %>/edit">Edit</a> </button></td>
                             <td> <form method='get' action="/users/<%= p.id %>/delete?_method=DELETE">
                                    <button>Delete</button>
                             </form> </td>

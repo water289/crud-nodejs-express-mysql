@@ -1,19 +1,21 @@
-const express=require('express');
+const express = require('express');
 const { v4: uuidv4 } = require('uuid');
-const app=express();
-const mysql=require('mysql2');
-const path=require("path");
-app.set("view engine","ejs");
-app.set("views",path.join(__dirname,"views"));
-app.use(express.urlencoded({extended:true}));
+const app = express();
+const mysql = require('mysql2');
+const path = require('path');
+const port = process.env.PORT || 8000;
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-const methodOverride=require("method-override");
-app.use(methodOverride("_method"));
-const connection=mysql.createConnection({
-       host:'localhost',
-       user:'root',
-       database:'first_db',
-       password:'kishu45',
+const methodOverride = require('method-override');
+app.use(methodOverride('_method'));
+const connection = mysql.createConnection({
+       host: process.env.DB_HOST || 'mysql',
+       user: process.env.DB_USER || 'crud_user',
+       database: process.env.DB_NAME || 'crud_db',
+       password: process.env.DB_PASSWORD || 'crud_pass',
+       port: Number(process.env.DB_PORT || 3306)
 });
 const { faker } = require('@faker-js/faker');
 
@@ -148,6 +150,6 @@ app.get('/',(req,res)=>{
               console.log(err);
        }
 })
-app.listen('8000',()=>{
-       console.log('app is listening ');
-})
+app.listen(port, ()=>{
+       console.log(`app is listening on ${port}`);
+});
