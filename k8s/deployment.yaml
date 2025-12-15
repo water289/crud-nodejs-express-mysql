@@ -15,7 +15,7 @@ kind: Deployment
 metadata:
   name: crud-app
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: crud-app
