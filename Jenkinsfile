@@ -78,17 +78,16 @@ pipeline {
           kubectl wait --for=condition=ready pod -l app=crud-app --timeout=300s || true
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana -n monitoring --timeout=300s || true
           
-          # Create startup script for port forwarding
-          cat > /tmp/start-portforward.sh << 'EOF'
-#!/bin/bash
-kubectl port-forward svc/crud-app 8000:80 --address=0.0.0.0 > /tmp/crud-app-portforward.log 2>&1 &
-kubectl --namespace monitoring port-forward svc/prometheus-grafana 3000:80 --address=0.0.0.0 > /tmp/grafana-portforward.log 2>&1 &
-EOF
+          # Prevent Jenkins from killing these processes
+          JENKINS_NODE_COOKIE=dontKillMe
+          BUILD_ID=dontKillMe
           
-          chmod +x /tmp/start-portforward.sh
+          # Start port forwarding in background with nohup and disown
+          nohup kubectl port-forward svc/crud-app 8000:80 --address=0.0.0.0 > /tmp/crud-app-portforward.log 2>&1 </dev/null &
+          disown
           
-          # Start port forwarding in detached mode
-          setsid /tmp/start-portforward.sh < /dev/null &> /dev/null &
+          nohup kubectl --namespace monitoring port-forward svc/prometheus-grafana 3000:80 --address=0.0.0.0 > /tmp/grafana-portforward.log 2>&1 </dev/null &
+          disown
           
           sleep 5
           
@@ -96,8 +95,8 @@ EOF
           ps aux | grep "port-forward" | grep -v grep || echo "Warning: Port forwarding processes may not be running"
           
           echo "Port forwarding started:"
-          echo "- CRUD App: http://<SERVER-IP>:8000"
-          echo "- Grafana: http://<SERVER-IP>:3000"
+          echo "- CRUD App: http://18.117.252.198:8000"
+          echo "- Grafana: http://18.117.252.198:3000"
           echo ""
           echo "Grafana admin password:"
           kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d
