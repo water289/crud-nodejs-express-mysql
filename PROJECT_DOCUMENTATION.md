@@ -50,7 +50,8 @@ A simple yet functional web application that demonstrates basic CRUD (Create, Re
 - **Runtime:** Node.js (v18 Alpine)
 - **Framework:** Express.js
 - **Template Engine:** EJS
-- **Storage:** In-memory array (can be extended to MySQL)
+- **Database:** MySQL 8.0 with persistent storage
+- **Connection Pool:** mysql2/promise
 - **Frontend:** HTML/CSS with EJS templating
 
 #### Key Features
@@ -59,8 +60,12 @@ A simple yet functional web application that demonstrates basic CRUD (Create, Re
 3. **Update Posts** - Edit existing post content
 4. **Delete Posts** - Remove posts from the list
 
-#### Sample Data
-The application comes with 10 pre-populated sample posts from different users with realistic content including emojis and engagement metrics (likes and comments).
+#### Database Integration
+- **MySQL Database:** All posts stored persistently in MySQL database
+- **Auto-initialization:** Database tables created automatically on first startup
+- **Seed Data:** 10 pre-populated sample posts inserted on initial deployment
+- **Connection Resilience:** Automatic retry mechanism with configurable timeout
+- **Environment Configuration:** Database credentials managed via Kubernetes ConfigMap/Secrets
 
 ---
 
@@ -92,8 +97,11 @@ The application comes with 10 pre-populated sample posts from different users wi
 │                   CI/CD Pipeline                            │
 │  Jenkins (Automation & Orchestration)                       │
 └─────────────────────────────────────────────────────────────┘
-```
-
+```Instance Type:** t2.medium or higher
+- **Public IP:** 18.117.252.198
+- **Kubernetes Cluster:** Minikube (v1.34.0)
+- **CI/CD Server:** Jenkins (v2.528.3)
+- **Container Registry:** DockerHub (water289/crud-nodejs-mysql
 ### Infrastructure
 - **Cloud Provider:** AWS EC2 (Ubuntu 20.04 LTS)
 - **Kubernetes Cluster:** Minikube (v1.34.0)
@@ -641,11 +649,16 @@ docker run -p 3000:3000 water289/crud-nodejs-mysql:latest
 3. ✅ **k8s/mysql.yaml** - Database deployment manifest
 4. ✅ **k8s/hpa.yaml** - Auto-scaler configuration
 5. ✅ **Dockerfile** - Container image definition
-6. ✅ **index.js** - Backend application code
-7. ✅ **views/** - Frontend templates (EJS)
-8. ✅ **public/** - Static assets (CSS)
-
-### Expected Outputs
+6. ✅ **index.js** - Back (3 replicas minimum)
+  - Deployment: mysql (1 replica with persistent storage)
+  - Service: crud-app (LoadBalancer, port 80→3000)
+  - Service: mysql (ClusterIP, port 3306)
+  - HPA: crud-app-hpa (min: 3, max: 10, target: 50% CPU)
+  - PVC: mysql-pv-claim (5Gi, ReadWriteMany)
+- **Monitoring Stack:** Prometheus + Grafana in `monitoring` namespace
+- **Application Endpoints:**
+  - CRUD App: http://18.117.252.198:8000
+  - Grafana: http://18.117.252.198:3000
 - **Docker Images:** `water289/crud-nodejs-mysql` (tagged with latest and build number)
 - **Kubernetes Resources:**
   - Deployment: crud-app
@@ -673,12 +686,14 @@ docker run -p 3000:3000 water289/crud-nodejs-mysql:latest
    - Automatic code retrieval
    - Webhook integration
 
-2. **Docker Image Creation Stage [10 Marks]** ✅
-   - Dockerfile with multi-layer build
-   - Image tagging (latest + build number)
-   - DockerHub push integration
-   - Credential management
-
+2. **Docker Image Creation Sta3 replicas (high availability)
+   - Service configuration (LoadBalancer on port 80)
+   - MySQL deployment with PersistentVolumeClaim (5Gi)
+   - HorizontalPodAutoscaler (3-10 replicas, 50% CPU threshold)
+   - Resource limits (500m CPU, 512Mi memory) and requests (200m CPU, 256Mi memory)
+   - ImagePullPolicy: Always (ensures latest code deployment)
+   - Automatic rollout restart on each deployment
+   - Environment variables for database configuration
 3. **Kubernetes Deployment Stage [17 Marks]** ✅
    - Deployment manifest with replicas
    - Service configuration (LoadBalancer)
@@ -703,12 +718,15 @@ docker run -p 3000:3000 water289/crud-nodejs-mysql:latest
 - ✅ Jenkins pipeline script (Jenkinsfile)
 - ✅ Application source code (index.js + templates)
 
----
-
-## Conclusion
-
-This project successfully demonstrates a complete CI/CD pipeline implementing:
-
+--- with webhook integration
+- ✅ Production-grade Kubernetes configuration with 3 minimum replicas
+- ✅ Persistent MySQL database with automatic initialization
+- ✅ Comprehensive monitoring and alerting via Prometheus/Grafana
+- ✅ Scalable architecture (3-10 replicas based on CPU load)
+- ✅ High availability with LoadBalancer service
+- ✅ Docker image management with versioning and always-pull policy
+- ✅ Database connection resilience with retry logic
+- ✅ Complete documentation with all YAML manifests
 1. **Continuous Integration** - Automatic code fetch and Docker image creation
 2. **Continuous Deployment** - Automated Kubernetes deployment
 3. **Scalability** - Horizontal Pod Autoscaler for load management
