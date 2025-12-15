@@ -65,6 +65,37 @@ pipeline {
         '''
       }
     }
+    
+    stage('Setup Port Forwarding') {
+      steps {
+        echo 'Setting up port forwarding for CRUD app and Grafana'
+        sh '''
+          # Kill any existing port-forward processes
+          pkill -f "kubectl port-forward.*crud-app" || true
+          pkill -f "kubectl port-forward.*grafana" || true
+          
+          # Wait for pods to be ready
+          kubectl wait --for=condition=ready pod -l app=crud-app --timeout=300s || true
+          kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana -n monitoring --timeout=300s || true
+          
+          # Port forward CRUD app to port 8000
+          nohup kubectl port-forward svc/crud-app 8000:80 --address=0.0.0.0 > /tmp/crud-app-portforward.log 2>&1 &
+          
+          # Port forward Grafana to port 3000
+          nohup kubectl --namespace monitoring port-forward svc/prometheus-grafana 3000:80 --address=0.0.0.0 > /tmp/grafana-portforward.log 2>&1 &
+          
+          sleep 3
+          echo "Port forwarding started:"
+          echo "- CRUD App: http://localhost:8000"
+          echo "- Grafana: http://localhost:3000"
+          
+          # Get Grafana admin password
+          echo "Grafana admin password:"
+          kubectl get secret --namespace monitoring prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 -d
+          echo ""
+        '''
+      }
+    }
   }
   
   post {
