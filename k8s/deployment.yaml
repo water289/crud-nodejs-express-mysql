@@ -1,0 +1,49 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: crud-app
+spec:
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 3000
+  selector:
+    app: crud-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: crud-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crud-app
+  template:
+    metadata:
+      labels:
+        app: crud-app
+    spec:
+      containers:
+      - image: water289/crud-nodejs-mysql:latest
+        name: crud-app
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
+        env:
+        - name: DB_HOST
+          value: mysql
+        - name: DB_USER
+          value: crud_user
+        - name: DB_PASSWORD
+          value: crud_pass
+        - name: DB_NAME
+          value: crud_db
+        - name: PORT
+          value: "3000"
+        ports:
+        - containerPort: 3000
