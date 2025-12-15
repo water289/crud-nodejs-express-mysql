@@ -37,6 +37,11 @@ pipeline {
         sh 'kubectl apply -f k8s/mysql.yaml'
         sh 'kubectl apply -f k8s/deployment.yaml'
         sh 'kubectl apply -f k8s/hpa.yaml'
+        sh '''
+          # Force rollout restart to ensure pods pull latest image
+          kubectl rollout restart deployment/crud-app
+          kubectl rollout status deployment/crud-app --timeout=300s
+        '''
         sh 'kubectl get pods'
         sh 'kubectl get svc'
         sh 'kubectl get hpa'

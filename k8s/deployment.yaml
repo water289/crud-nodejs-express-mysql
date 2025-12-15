@@ -26,6 +26,7 @@ spec:
     spec:
       containers:
       - image: water289/crud-nodejs-mysql:latest
+        imagePullPolicy: Always
         name: crud-app
         resources:
           limits:
