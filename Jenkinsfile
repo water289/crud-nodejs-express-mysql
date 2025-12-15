@@ -69,7 +69,7 @@ pipeline {
     stage('Setup Port Forwarding') {
       steps {
         echo 'Setting up port forwarding for CRUD app and Grafana'
-        sh '''
+        sh '''#!/bin/bash
           # Kill any existing port-forward processes
           pkill -f "kubectl port-forward.*crud-app" || true
           pkill -f "kubectl port-forward.*grafana" || true
@@ -79,8 +79,8 @@ pipeline {
           kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=grafana -n monitoring --timeout=300s || true
           
           # Prevent Jenkins from killing these processes
-          JENKINS_NODE_COOKIE=dontKillMe
-          BUILD_ID=dontKillMe
+          export JENKINS_NODE_COOKIE=dontKillMe
+          export BUILD_ID=dontKillMe
           
           # Start port forwarding in background with nohup and disown
           nohup kubectl port-forward svc/crud-app 8000:80 --address=0.0.0.0 > /tmp/crud-app-portforward.log 2>&1 </dev/null &
