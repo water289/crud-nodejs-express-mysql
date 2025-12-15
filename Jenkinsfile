@@ -34,35 +34,39 @@ pipeline {
     stage('Kubernetes Deployment') {
       steps {
         echo 'Deploying to Kubernetes'
-        sh 'kubectl apply -f k8s/mysql.yaml --validate=false'
-        sh 'kubectl apply -f k8s/deployment.yaml --validate=false'
-        sh 'kubectl apply -f k8s/hpa.yaml --validate=false'
-        sh 'kubectl get pods'
-        sh 'kubectl get svc'
-        sh 'kubectl get hpa'
+        withCredentials([file(credentialsId: 'kubeconfig-creds', variable: 'KUBECONFIG')]) {
+          sh 'kubectl apply -f k8s/mysql.yaml'
+          sh 'kubectl apply -f k8s/deployment.yaml'
+          sh 'kubectl apply -f k8s/hpa.yaml'
+          sh 'kubectl get pods'
+          sh 'kubectl get svc'
+          sh 'kubectl get hpa'
+        }
       }
     }
     
     stage('Prometheus/Grafana Deployment') {
       steps {
         echo 'Deploying Prometheus and Grafana using Helm'
-        sh '''
-          # Install Helm if not installed
-          if ! command -v helm &> /dev/null; then
-            curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-          fi
-          
-          # Create monitoring namespace
-          kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f - --validate=false
-          
-          # Install kube-prometheus-stack
-          helm install prometheus kube-prometheus-stack \
-            --repo https://prometheus-community.github.io/helm-charts \
-            --namespace monitoring
-          
-          kubectl get deployments -n monitoring
-          kubectl get svc -n monitoring
-        '''
+        withCredentials([file(credentialsId: 'kubeconfig-creds', variable: 'KUBECONFIG')]) {
+          sh '''
+            # Install Helm if not installed
+            if ! command -v helm &> /dev/null; then
+              curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+            fi
+            
+            # Create monitoring namespace
+            kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+            
+            # Install kube-prometheus-stack
+            helm install prometheus kube-prometheus-stack \
+              --repo https://prometheus-community.github.io/helm-charts \
+              --namespace monitoring
+            
+            kubectl get deployments -n monitoring
+            kubectl get svc -n monitoring
+          '''
+        }
       }
     }
   }
