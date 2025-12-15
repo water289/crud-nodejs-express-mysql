@@ -3,7 +3,7 @@
 <head>
        <meta charset="UTF-8">
        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>Document</title>
+       <title>View Post - <%=post.name%></title>
        <link rel="stylesheet" href="/viewpost.css">
 </head>
 <body>
@@ -12,7 +12,12 @@
               <h4>Name: <%=post.name%></h4>
               <p>Post: <%=post.content%></p>
               <strong>Likes: <%=post.likes%></strong>
-              <strong>Likes: <%=post.comments%></strong>
+              <strong>Comments: <%=post.comments%></strong>
+       </div>
+       <div style="text-align: center; margin-top: 20px;">
+              <button><a href="/posts" style="text-decoration: none;">Back to Posts</a></button>
+              <button><a href="/posts/<%=post.id%>/edit" style="text-decoration: none;">Edit</a></button>
+              <button><a href="/posts/<%=post.id%>/delete" style="text-decoration: none;">Delete</a></button>
        </div>
 </body>
 </html>

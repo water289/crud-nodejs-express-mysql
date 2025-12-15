@@ -3,15 +3,17 @@
 <head>
        <meta charset="UTF-8">
        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-       <title>New post</title>
+       <title>New Post - Quora</title>
 </head>
 <body>
+       <h1 style="text-align: center;">Create New Post</h1>
        <form method="post" action="/posts">
               <label for="name">Name: </label>
-              <input type="text" name="name" id="name">
-              <label for="content"></label>
-              <textarea name="content" placeholder="type your content" id="content"></textarea>
-              <button>Submit Post</button>
+              <input type="text" name="name" id="name" required>
+              <label for="content">Content:</label>
+              <textarea name="content" placeholder="Type your content" id="content" required></textarea>
+              <button type="submit">Submit Post</button>
+              <button type="button"><a href="/posts" style="text-decoration: none;">Cancel</a></button>
        </form>
 </body>
 </html>

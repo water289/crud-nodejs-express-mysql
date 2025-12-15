@@ -23,16 +23,28 @@ const posts = [
        { name: "Mia Anderson", content: "Visited the art gallery today. The creativity on display was inspiring! 🎨", likes: 175, comments: 18,id:uuidv4() },
        { name: "Ethan Moore", content: "Weekend camping trip was a success! Great friends, food, and stories by the fire. 🔥", likes: 220, comments: 25 ,id:uuidv4()}
 ];
+
+// Root route - redirect to posts
+app.get('/',(req,res)=>{
+       res.redirect('/posts');
+})
+
 app.get('/posts',(req,res)=>{
        res.render('first/post',{posts});
 })
+
+// Important: /posts/new must come before /posts/:id
+app.get('/posts/new',(req,res)=>{
+       res.render('first/newpost');
+})
+
 app.get('/posts/:id',(req,res)=>{
        const {id}=req.params;
        let post= posts.find((p)=> id===p.id);
+       if(!post){
+              return res.status(404).send('Post not found');
+       }
        res.render('first/viewPost.ejs',{post});
-})
-app.get('/posts/new',(req,res)=>{
-       res.render('first/newpost');
 })
 app.post('/posts',(req,res)=>{
        const {name,content,likes,comments}=req.body;
@@ -57,6 +69,9 @@ app.get('/posts/:id/delete',(req,res)=>{
 app.patch('/posts/:id',(req,res)=>{
        let {id}=req.params;
        let post=posts.find((p)=> id===p.id);
+       if(!post){
+              return res.status(404).send('Post not found');
+       }
        let newcontent=req.body.content;
        post.content=newcontent;
        res.redirect('/posts');
@@ -68,8 +83,7 @@ app.get('/posts/:id/edit',(req,res)=>{
        if(post){
               res.render('first/edit',{post})
        }else{
-              console.log('not found');
-              res.render('/posts');              
+              res.status(404).send('Post not found');
        }
 })
 app.listen(port,()=>{
