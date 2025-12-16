@@ -30,7 +30,24 @@ pipeline {
         sh 'docker push ${DOCKER_IMAGE}:${BUILD_NUMBER}'
       }
     }
-    
+    stage('Pre-Deployment Cleanup') {
+      steps {
+        echo 'Cleaning up any test/load pods and ensuring stable state'
+        sh '''
+          # Get current replica count
+          CURRENT_REPLICAS=$(kubectl get deployment crud-app -o jsonpath='{.status.replicas}' 2>/dev/null || echo "0")
+          
+          # If more than 3 replicas, scale down to minReplicas
+          if [ "$CURRENT_REPLICAS" -gt 3 ]; then
+            echo "Scaling down from $CURRENT_REPLICAS to 3 replicas before deployment..."
+            kubectl scale deployment crud-app --replicas=3 || true
+            sleep 20
+          fi
+          
+          echo "Pre-deployment cleanup complete"
+        '''
+      }
+    }
     stage('Kubernetes Deployment') {
       steps {
         echo 'Deploying to Kubernetes'
